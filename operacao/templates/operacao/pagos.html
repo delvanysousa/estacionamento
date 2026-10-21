@@ -1,0 +1,5 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>Pagos — podem subir</h1>
+{% for c in carros %}{% include "operacao/_carro.html" %}{% empty %}<p>Nenhum carro pago esperando.</p>{% endfor %}
+{% endblock %}

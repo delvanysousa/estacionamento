@@ -1,0 +1,5 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>{{ andar }} — {{ andar.ocupados }}/{{ andar.capacidade }} {% if andar.cheio %}(CHEIO){% endif %}</h1>
+{% for c in carros %}{% include "operacao/_carro.html" %}{% empty %}<p>Nenhum carro neste subsolo.</p>{% endfor %}
+{% endblock %}

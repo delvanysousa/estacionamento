@@ -1,0 +1,15 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>⬇ Receber carro</h1>
+<form method="post">{% csrf_token %}
+  <label>Número do ticket</label><input name="ticket" value="{{ request.POST.ticket }}" autocomplete="off" autofocus>
+  <label>Placa</label><input name="placa" value="{{ request.POST.placa }}" autocomplete="off" style="text-transform:uppercase" maxlength="8">
+  <label>Para qual subsolo o carro foi?</label>
+  <select name="andar">
+    {% for a in andares %}<option value="{{ a.pk }}" {% if a == sugerido %}selected{% endif %} {% if a.cheio %}disabled{% endif %}>
+      {{ a }} — {% if a.cheio %}CHEIO{% else %}{{ a.livres }} livres{% endif %}</option>{% endfor %}
+  </select>
+  <small>Já vem marcado o subsolo mais perto da saída que ainda tem vaga.</small>
+  <button class="btn">Registrar carro</button>
+</form>
+{% endblock %}

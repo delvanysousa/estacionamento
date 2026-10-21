@@ -1,0 +1,11 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>Entrar</h1>
+<form method="post">{% csrf_token %}
+  {% if form.errors %}<div class="msg error">Usuário ou senha incorretos.</div>{% endif %}
+  <label>Usuário</label><input name="username" autofocus autocapitalize="none">
+  <label>Senha</label><input name="password" type="password">
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn">Entrar</button>
+</form>
+{% endblock %}

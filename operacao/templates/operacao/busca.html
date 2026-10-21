@@ -1,0 +1,12 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>⬆ Saída do carro</h1>
+<div class="passo">Digite o ticket ou a placa &nbsp;→&nbsp; veja em que subsolo está &nbsp;→&nbsp; cliente pagou: <b>PAGO</b> &nbsp;→&nbsp; carro entregue: <b>ENTREGUE</b></div>
+<form method="get"><input name="q" value="{{ q }}" placeholder="Ticket ou placa" autocomplete="off" autofocus><button class="btn">Procurar</button></form>
+{% if q %}
+<h1>Resultado</h1>
+{% for c in carros %}{% include "operacao/_carro.html" %}{% empty %}<p>Nenhum carro encontrado com esse ticket ou placa.</p>{% endfor %}
+{% endif %}
+<h1>Pagos, esperando entrega ({{ pagos_lista|length }})</h1>
+{% for c in pagos_lista %}{% include "operacao/_carro.html" %}{% empty %}<p>Nenhum carro pago esperando.</p>{% endfor %}
+{% endblock %}

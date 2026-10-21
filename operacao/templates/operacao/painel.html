@@ -1,0 +1,15 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>Subsolos</h1>
+{% if qtd_pagos and perms.operacao.usar_saida %}<a class="aviso" href="{% url 'pagos' %}">⬆ {{ qtd_pagos }} carro(s) pago(s) esperando: toque para ver</a>{% endif %}
+<div class="grid">
+{% for a in andares %}
+<a class="card {{ a.cor }}" {% if perms.operacao.usar_saida %}href="{% url 'andar' a.numero %}"{% endif %}>
+  <div>{{ a }}</div>
+  <div class="big">{{ a.ocupados }} / {{ a.capacidade }}</div>
+  <div class="bar"><i style="width:{{ a.percentual }}%"></i></div>
+  <small>{% if a.cheio %}<b>CHEIO</b>{% else %}{{ a.livres }} vagas livres{% endif %}</small>
+</a>
+{% empty %}<p>Nenhum subsolo ativo. Peça ao administrador para cadastrar.</p>{% endfor %}
+</div>
+{% endblock %}

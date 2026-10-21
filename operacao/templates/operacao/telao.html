@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="5">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telão da operação</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#fff;font:24px/1.25 system-ui,Arial,sans-serif;padding:14px}
+header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+header b{font-size:30px}
+.cols{display:grid;gap:18px;grid-template-columns:1.4fr 1fr}
+h2{margin:0 0 8px;font-size:28px;letter-spacing:1px}
+.subir h2{color:#5eead4}.descer h2{color:#fbbf24}
+.linha{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#16233f;border-radius:14px;padding:12px 18px;margin-bottom:10px}
+.placa{font-size:46px;font-weight:800;letter-spacing:3px}
+.sub{font-size:44px;font-weight:800;color:#5eead4}
+.descer .sub{color:#fbbf24}
+.mini{font-size:22px;color:#aab6d3}
+.urgente{background:#8a1c1c;animation:pisca 1.2s infinite}
+.busca{background:#4a3a00}
+@keyframes pisca{50%{background:#b42323}}
+.vazio{color:#7f8db0;padding:20px}
+footer{margin-top:14px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.and{border-radius:12px;padding:10px 14px;background:#16233f;border-left:12px solid #2a9d5c}
+.and.amarelo{border-color:#f4a300}.and.vermelho{border-color:#e63946;background:#3b1620}
+.and b{font-size:34px}
+@media (max-width:900px){.cols{grid-template-columns:1fr}.placa{font-size:34px}}
+</style>
+</head>
+<body>
+<header><b>📺 OPERAÇÃO</b><span class="mini">atualiza sozinho · {{ hora|date:"H:i:s" }}</span></header>
+<div class="cols">
+  <section class="subir">
+    <h2>⬆ PAGOS — PODEM SUBIR</h2>
+    {% for c in subir %}
+    <div class="linha {% if c.urgente %}urgente{% elif c.status == 'EM_RETIRADA' %}busca{% endif %}">
+      <span class="placa">{{ c.placa|default:c.ticket }}<br><span class="mini">ticket {{ c.ticket }}</span></span>
+      <span class="sub">{{ c.andar.numero }}º</span>
+      <span class="mini">{% if c.status == 'EM_RETIRADA' %}buscando:<br><b>{{ c.retirado_por.first_name|default:c.retirado_por.username }}</b>{% else %}espera<br><b>{{ c.espera_min }} min</b>{% endif %}</span>
+    </div>
+    {% empty %}<div class="vazio">Nenhum carro pago esperando.</div>{% endfor %}
+  </section>
+  <section class="descer">
+    <h2>⬇ PODE DESCER</h2>
+    {% for c in descer %}
+    <div class="linha">
+      <span class="placa">{{ c.placa|default:c.ticket }}<br><span class="mini">ticket {{ c.ticket }}</span></span>
+      <span class="sub">{{ c.andar.numero }}º</span>
+      <span class="mini">{{ c.quem_desceu.first_name|default:c.quem_desceu.username }}</span>
+    </div>
+    {% empty %}<div class="vazio">Nenhum carro novo.</div>{% endfor %}
+  </section>
+</div>
+<footer>
+{% for a in andares %}
+  <div class="and {{ a.cor }}"><span class="mini">{{ a.numero }}º subsolo</span><br><b>{% if a.cheio %}CHEIO{% else %}{{ a.livres }}{% endif %}</b> <span class="mini">{% if not a.cheio %}livres{% endif %}</span></div>
+{% endfor %}
+</footer>
+</body>
+</html>

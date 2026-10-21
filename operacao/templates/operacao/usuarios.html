@@ -1,0 +1,14 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>👥 Usuários</h1>
+<a class="btn verde" href="{% url 'usuario_novo' %}" style="display:block;text-align:center;text-decoration:none">+ Novo usuário</a>
+<div class="wrap" style="margin-top:12px"><table>
+<tr><th>Login</th><th>Nome</th><th>Perfil</th><th>Situação</th><th></th></tr>
+{% for u in usuarios %}<tr>
+  <td><b>{{ u.username }}</b></td><td>{{ u.first_name|default:"-" }}</td><td>{{ u.perfil_txt }}</td>
+  <td>{% if u.is_active %}Ativo{% else %}<b>Desativado</b>{% endif %}</td>
+  <td>{% if u.is_superuser %}—{% else %}<a href="{% url 'usuario_editar' u.pk %}">Editar</a>{% endif %}</td>
+</tr>{% endfor %}
+</table></div>
+<small>Para bloquear um login, abra "Editar" e desmarque "Usuário ativo". Os logins não são apagados, para manter o histórico dos carros.</small>
+{% endblock %}

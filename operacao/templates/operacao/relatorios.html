@@ -1,0 +1,52 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>📊 Relatório</h1>
+<form method="get" class="carro">
+  <div class="grid">
+    <div><label>De</label><input type="date" name="ini" value="{{ ini }}"></div>
+    <div><label>Até</label><input type="date" name="fim" value="{{ fim }}"></div>
+  </div>
+  <button class="btn">Ver relatório</button>
+  <p style="margin:10px 0 0">Atalhos:
+    <a href="?ini={{ hoje }}&fim={{ hoje }}">Hoje</a> ·
+    <a href="?ini={{ ontem }}&fim={{ ontem }}">Ontem</a> ·
+    <a href="?ini={{ sete }}&fim={{ hoje }}">Últimos 7 dias</a></p>
+  <small>O período vale para chegadas, pagamentos e saídas. "Agora" mostra sempre a situação de neste momento.</small>
+</form>
+
+<div class="grid" style="margin-bottom:14px">
+  <a class="btn verde" style="text-align:center;text-decoration:none" href="{% url 'exportar' 'pdf' %}?ini={{ ini }}&fim={{ fim }}">📄 Baixar PDF</a>
+  <a class="btn" style="text-align:center;text-decoration:none" href="{% url 'exportar' 'excel' %}?ini={{ ini }}&fim={{ fim }}">📊 Baixar Excel</a>
+</div>
+
+<div class="grid">
+  <div class="card kpi"><span class="big">{{ n_entraram }}</span>Carros que chegaram</div>
+  <div class="card kpi"><span class="big">{{ n_pagos_periodo }}</span>Carros pagos</div>
+  <div class="card kpi"><span class="big">{{ n_entregues }}</span>Carros que saíram</div>
+  <div class="card kpi"><span class="big">{{ n_no_momento }}</span>No estacionamento agora</div>
+  <div class="card kpi"><span class="big">{{ n_pagos }}</span>Pagos, ainda não saíram</div>
+  <div class="card kpi"><span class="big">{{ media_txt }}</span>Tempo médio no local</div>
+  <div class="card kpi"><span class="big">{{ maior_txt }}</span>Maior permanência</div>
+  <div class="card kpi"><span class="big">{{ atendimento_txt }}</span>Tempo médio do pago até a entrega</div>
+</div>
+
+<h1>Tempo de cada carro que já saiu ({{ n_entregues }})</h1>
+<div class="wrap"><table>
+<tr><th>Placa</th><th>Ticket</th><th>Subsolo</th><th>Entrada</th><th>Pago às</th><th>Saída</th><th>Tempo no local</th></tr>
+{% for c in saidos %}<tr><td><b>{{ c.placa|default:"-" }}</b></td><td>{{ c.ticket }}</td><td>{{ c.andar.numero }}º</td><td>{{ c.recebido_em|date:"d/m H:i" }}</td><td>{{ c.pago_em|date:"H:i"|default:"-" }}</td><td>{{ c.entregue_em|date:"d/m H:i" }}</td><td><b>{{ c.tempo_txt }}</b></td></tr>
+{% empty %}<tr><td colspan="7">Nenhuma saída neste período.</td></tr>{% endfor %}
+</table></div>
+
+<h1>Carros no estacionamento agora ({{ n_no_momento }})</h1>
+<div class="wrap"><table>
+<tr><th>Placa</th><th>Ticket</th><th>Subsolo</th><th>Situação</th><th>Entrada</th><th>Pago às</th><th>Tempo até agora</th></tr>
+{% for c in no_momento %}<tr><td><b>{{ c.placa|default:"-" }}</b></td><td>{{ c.ticket }}</td><td>{{ c.andar.numero }}º</td><td>{{ c.get_status_display }}</td><td>{{ c.recebido_em|date:"d/m H:i" }}</td><td>{{ c.pago_em|date:"H:i"|default:"-" }}</td><td><b>{{ c.tempo_txt }}</b></td></tr>
+{% empty %}<tr><td colspan="7">Nenhum carro no momento.</td></tr>{% endfor %}
+</table></div>
+
+<h1>Ocupação por subsolo</h1>
+<div class="wrap"><table>
+<tr><th>Subsolo</th><th>Carros</th><th>Capacidade</th><th>Livres</th></tr>
+{% for a in andares %}<tr><td>{{ a }}</td><td>{{ a.ocupados }}</td><td>{{ a.capacidade }}</td><td>{% if a.cheio %}<b>CHEIO</b>{% else %}{{ a.livres }}{% endif %}</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

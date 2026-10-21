@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operação do Estacionamento</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:18px/1.4 system-ui,Arial,sans-serif;background:#f1f3f6;color:#1b1f24}
+nav{background:#14213d;display:flex;flex-wrap:wrap;gap:6px;padding:8px;align-items:center}
+nav a,nav button{color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;background:#26365f;border:0;font:inherit;cursor:pointer}
+nav .sp{flex:1}
+.badge{background:#e63946;border-radius:99px;padding:0 8px;margin-left:4px}
+main{max-width:900px;margin:0 auto;padding:12px}
+h1{font-size:22px;margin:8px 0}
+.msg{padding:12px;border-radius:8px;margin-bottom:10px;font-weight:600}
+.msg.success{background:#d8f3e3;color:#0b5d36}.msg.error{background:#fde2e2;color:#8a1c1c}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.card{background:#fff;border-radius:12px;padding:14px;border-left:10px solid #ccc;text-decoration:none;color:inherit;display:block}
+.card.verde{border-color:#2a9d5c}.card.amarelo{border-color:#f4a300}.card.vermelho{border-color:#e63946;background:#fff1f1}
+.big{font-size:30px;font-weight:800}
+.bar{height:10px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:#2a9d5c}.amarelo .bar i{background:#f4a300}.vermelho .bar i{background:#e63946}
+.carro{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px}
+.placa{font-size:28px;font-weight:800;letter-spacing:2px}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:14px;font-weight:700;background:#e3e6ea}
+.tag.PAGO{background:#cdeedb;color:#0b5d36}.tag.EM_RETIRADA{background:#ffe9b8;color:#7a4b00}
+.btn{width:100%;padding:16px;margin-top:8px;border:0;border-radius:10px;font:700 18px system-ui;color:#fff;background:#1f5eff;cursor:pointer}
+.btn.verde{background:#2a9d5c}.btn.cinza{background:#6b7280;padding:10px;font-size:15px}
+input,select{width:100%;padding:14px;font:inherit;border:2px solid #cfd4db;border-radius:10px;margin:4px 0 12px}
+label{font-weight:700}
+small{color:#5b6470}
+.wrap{overflow-x:auto;background:#fff;border-radius:12px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:16px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #e3e6ea;white-space:nowrap}
+th{background:#eef0f4}
+.kpi{text-align:center}.kpi .big{display:block}
+.tiles{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));margin:4px 0 14px}
+.tile input{position:absolute;opacity:0}
+.tile span{display:block;text-align:center;padding:12px 6px;border:3px solid #cfd4db;border-radius:12px;background:#fff;font-weight:700;cursor:pointer}
+.tile input:checked+span{border-color:#1f5eff;background:#e6edff}
+.tile input:disabled+span{background:#fde2e2;color:#8a1c1c;border-color:#f3b4b4;cursor:not-allowed}
+.tile{position:relative}
+.nomes{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-top:6px}
+.nome{padding:16px 8px;border:0;border-radius:10px;background:#1f5eff;color:#fff;font:700 18px system-ui;cursor:pointer}
+.nome.verde{background:#2a9d5c}
+.passo{background:#e6edff;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-weight:600}
+.andarbig{font-size:30px;font-weight:800;color:#1f5eff;margin:2px 0 6px}
+.alerta{background:#fff3cd;border-radius:10px;padding:12px;font-weight:800;font-size:22px;margin-top:8px}
+.aviso{background:#fff3cd;padding:12px;border-radius:10px;margin-bottom:12px;display:block;color:#1b1f24;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<nav>
+{% if user.is_authenticated %}
+<a href="{% url 'painel' %}">🏢 Andares</a>
+{% if perms.operacao.registrar_entrada %}<a href="{% url 'receber' %}">⬇ Receber carro</a>{% endif %}
+{% if perms.operacao.usar_saida %}<a href="{% url 'busca' %}">⬆ Saída{% if qtd_pagos %}<span class="badge">{{ qtd_pagos }}</span>{% endif %}</a>{% endif %}
+{% if perms.operacao.ver_relatorios %}<a href="{% url 'relatorios' %}">📊 Relatórios</a>{% endif %}
+{% if user.is_superuser %}<a href="{% url 'usuarios' %}">👥 Usuários</a>{% endif %}
+{% if user.is_staff %}<a href="/admin/">⚙ Admin</a>{% endif %}
+<span class="sp"></span>
+<form method="post" action="{% url 'logout' %}" style="margin:0">{% csrf_token %}<button>Sair ({{ user.first_name|default:user.username }})</button></form>
+{% endif %}
+</nav>
+<main>
+{% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+{% block conteudo %}{% endblock %}
+</main>
+</body>
+</html>

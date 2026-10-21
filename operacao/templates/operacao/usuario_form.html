@@ -1,0 +1,30 @@
+{% extends "operacao/base.html" %}
+{% block conteudo %}
+<h1>{% if alvo %}Editar usuário{% else %}Novo usuário{% endif %}</h1>
+<form method="post">{% csrf_token %}
+  <label>Login (nome usado para entrar)</label>
+  <input name="username" value="{{ f.username }}" autocomplete="off" autocapitalize="none" {% if alvo %}readonly{% endif %}>
+  <label>Nome da pessoa</label>
+  <input name="nome" value="{{ f.nome }}" autocomplete="off">
+  <label>Senha {% if alvo %}<small>(deixe em branco para não mudar)</small>{% endif %}</label>
+  <input name="senha" type="password" autocomplete="new-password">
+  <small>Mínimo de 8 caracteres e não pode ser só números.</small>
+
+  <label style="margin-top:14px">Perfil</label>
+  {% for p in perfis %}
+  <label class="carro" style="display:block;cursor:pointer;font-weight:400">
+    <input type="radio" name="perfil" value="{{ p.nome }}" {% if p.marcado %}checked{% endif %} style="width:auto;margin:0 8px 0 0">
+    <b>{{ p.nome }}</b><br><small>{{ p.descricao }}</small>
+  </label>
+  {% endfor %}
+
+  <label>Liberações <small>(valem só para o perfil "Personalizado")</small></label>
+  {% for p in permissoes %}
+  <label style="font-weight:400;margin:4px 0"><input type="checkbox" name="perm_{{ p.codigo }}" {% if p.marcada %}checked{% endif %} style="width:auto;margin:0 8px 0 0">{{ p.rotulo }}</label>
+  {% endfor %}
+
+  <label style="margin-top:14px;font-weight:400"><input type="checkbox" name="ativo" {% if f.ativo %}checked{% endif %} style="width:auto;margin:0 8px 0 0"><b>Usuário ativo</b> (pode entrar no sistema)</label>
+  <button class="btn verde">Salvar</button>
+</form>
+<p><a href="{% url 'usuarios' %}">← Voltar para a lista</a></p>
+{% endblock %}
