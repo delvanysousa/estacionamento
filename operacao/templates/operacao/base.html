@@ -55,7 +55,8 @@ th{background:#eef0f4}
 {% if user.is_authenticated %}
 <a href="{% url 'painel' %}">🏢 Andares</a>
 {% if perms.operacao.registrar_entrada %}<a href="{% url 'receber' %}">⬇ Receber carro</a>{% endif %}
-{% if perms.operacao.usar_saida %}<a href="{% url 'busca' %}">⬆ Saída{% if qtd_pagos %}<span class="badge">{{ qtd_pagos }}</span>{% endif %}</a>{% endif %}
+{% if perms.operacao.usar_saida %}<a href="{% url 'busca' %}">⬆ Saída{% if qtd_pagos %}<span class="badge">{{ qtd_pagos }}</span>{% endif %}</a>
+<a href="{% url 'telao' %}" target="_blank">📺 Tela dos manobristas</a>{% endif %}
 {% if perms.operacao.ver_relatorios %}<a href="{% url 'relatorios' %}">📊 Relatórios</a>{% endif %}
 {% if user.is_superuser %}<a href="{% url 'usuarios' %}">👥 Usuários</a>{% endif %}
 {% if user.is_staff %}<a href="/admin/">⚙ Admin</a>{% endif %}

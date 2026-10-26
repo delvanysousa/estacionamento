@@ -9,10 +9,11 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from .models import ATIVOS, Andar, Carro
@@ -303,29 +304,41 @@ def exportar(request, formato):
     return resposta
 
 
-# ---------------------------------------------------------------- telão (opcional)
-JANELA_DESCER_MIN = 5
-URGENTE_MIN = 10
+# ---------------------------------------------------------------- tela dos manobristas (telão)
+JANELA_DESCER_MIN = 5   # por quantos minutos o carro novo aparece na coluna "pode descer"
+URGENTE_MIN = 10        # a partir de quantos minutos esperando o carro pago fica vermelho
 
 
 @precisa("usar_saida")
 def telao(request):
+    return render(request, "operacao/telao.html")
+
+
+@precisa("usar_saida")
+@never_cache
+def telao_dados(request):
+    """Dados que a tela dos manobristas busca a cada poucos segundos."""
     agora = timezone.now()
-    subir = list(Carro.objects.filter(status__in=["PAGO", "EM_RETIRADA"]).select_related("andar", "retirado_por"))
+    subir = list(Carro.objects.filter(status__in=["PAGO", "EM_RETIRADA"]).select_related("andar"))
     subir.sort(key=lambda c: (c.status == "EM_RETIRADA", c.pago_em or agora))
+    lista_subir = []
     for c in subir:
-        c.espera_min = int((agora - (c.pago_em or agora)).total_seconds() // 60)
-        c.urgente = c.status == "PAGO" and c.espera_min >= URGENTE_MIN
+        espera = max(int((agora - (c.pago_em or agora)).total_seconds() // 60), 0)
+        lista_subir.append({
+            "id": c.pk, "placa": c.placa, "ticket": c.ticket, "andar": c.andar.numero,
+            "status": c.status, "espera": espera,
+            "urgente": c.status == "PAGO" and espera >= URGENTE_MIN,
+        })
     limite = agora - timedelta(minutes=JANELA_DESCER_MIN)
-    descer = (
-        Carro.objects.filter(status="ESTACIONADO", recebido_em__gte=limite)
-        .select_related("andar", "desceu_por", "recebido_por")
-        .order_by("recebido_em")
-    )
-    return render(request, "operacao/telao.html", {
-        "subir": subir, "descer": descer,
-        "andares": Andar.objects.filter(ativo=True),
-        "hora": timezone.localtime(agora),
+    descer = Carro.objects.filter(status="ESTACIONADO", recebido_em__gte=limite).select_related("andar").order_by("recebido_em")
+    return JsonResponse({
+        "subir": lista_subir,
+        "descer": [{"id": c.pk, "placa": c.placa, "ticket": c.ticket, "andar": c.andar.numero} for c in descer],
+        "andares": [
+            {"numero": a.numero, "livres": a.livres(), "cheio": a.cheio(), "cor": a.cor()}
+            for a in Andar.objects.filter(ativo=True)
+        ],
+        "hora": timezone.localtime(agora).strftime("%H:%M:%S"),
     })
 
 

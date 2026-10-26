@@ -2,61 +2,245 @@
 <html lang="pt-br">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="5">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Telão da operação</title>
+<title>Tela dos manobristas</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b1220;color:#fff;font:24px/1.25 system-ui,Arial,sans-serif;padding:14px}
-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-header b{font-size:30px}
-.cols{display:grid;gap:18px;grid-template-columns:1.4fr 1fr}
-h2{margin:0 0 8px;font-size:28px;letter-spacing:1px}
+body{margin:0;background:#0b1220;color:#fff;font:22px/1.25 system-ui,Arial,sans-serif;padding:14px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+header b{font-size:28px}
+#som{background:#2f4a8a;color:#fff;border:0;border-radius:10px;padding:10px 16px;font:700 18px system-ui;cursor:pointer}
+#som.on{background:#14532d}
+#aviso{display:none;background:#8a1c1c;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-weight:700}
+.cols{display:grid;gap:18px;grid-template-columns:1.5fr 1fr}
+h2{margin:0 0 8px;font-size:26px;letter-spacing:1px}
 .subir h2{color:#5eead4}.descer h2{color:#fbbf24}
 .linha{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#16233f;border-radius:14px;padding:12px 18px;margin-bottom:10px}
-.placa{font-size:46px;font-weight:800;letter-spacing:3px}
+.placa{font-size:44px;font-weight:800;letter-spacing:3px}
 .sub{font-size:44px;font-weight:800;color:#5eead4}
 .descer .sub{color:#fbbf24}
-.mini{font-size:22px;color:#aab6d3}
+.mini{font-size:20px;color:#aab6d3}
 .urgente{background:#8a1c1c;animation:pisca 1.2s infinite}
 .busca{background:#4a3a00}
 @keyframes pisca{50%{background:#b42323}}
 .vazio{color:#7f8db0;padding:20px}
-footer{margin-top:14px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+#andares{margin-top:14px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .and{border-radius:12px;padding:10px 14px;background:#16233f;border-left:12px solid #2a9d5c}
 .and.amarelo{border-color:#f4a300}.and.vermelho{border-color:#e63946;background:#3b1620}
-.and b{font-size:34px}
-@media (max-width:900px){.cols{grid-template-columns:1fr}.placa{font-size:34px}}
+.and b{font-size:32px}
+#popup{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#popup[hidden]{display:none}
+.pop-card{width:min(900px,100%);background:#0f2b1d;border:8px solid #22c55e;border-radius:24px;padding:28px;text-align:center;animation:pulsa 1.4s infinite}
+@keyframes pulsa{50%{border-color:#86efac;background:#14532d}}
+.pop-tit{font-size:clamp(26px,4vw,44px);font-weight:800;color:#86efac}
+.pop-placa{font-size:clamp(60px,12vw,140px);font-weight:900;letter-spacing:6px;line-height:1.05;margin:10px 0}
+.pop-tick{font-size:clamp(22px,3vw,34px);color:#bbf7d0}
+.pop-and{font-size:clamp(48px,9vw,110px);font-weight:900;color:#fde047;margin:8px 0}
+.pop-fila{font-size:clamp(20px,2.6vw,30px);color:#fca5a5;min-height:1.3em;margin-bottom:10px}
+#pOk{width:100%;padding:22px;border:0;border-radius:16px;background:#22c55e;color:#052e16;font:900 clamp(28px,4vw,44px) system-ui;cursor:pointer}
+@media (max-width:900px){.cols{grid-template-columns:1fr}.placa,.sub{font-size:34px}}
 </style>
 </head>
 <body>
-<header><b>📺 OPERAÇÃO</b><span class="mini">atualiza sozinho · {{ hora|date:"H:i:s" }}</span></header>
+<header>
+  <b>📺 OPERAÇÃO — MANOBRISTAS</b>
+  <span><button id="som" type="button">🔔 Clique para ativar o som</button> <span class="mini" id="hora"></span></span>
+</header>
+<div id="aviso"></div>
 <div class="cols">
   <section class="subir">
     <h2>⬆ PAGOS — PODEM SUBIR</h2>
-    {% for c in subir %}
-    <div class="linha {% if c.urgente %}urgente{% elif c.status == 'EM_RETIRADA' %}busca{% endif %}">
-      <span class="placa">{{ c.placa|default:c.ticket }}<br><span class="mini">ticket {{ c.ticket }}</span></span>
-      <span class="sub">{{ c.andar.numero }}º</span>
-      <span class="mini">{% if c.status == 'EM_RETIRADA' %}buscando:<br><b>{{ c.retirado_por.first_name|default:c.retirado_por.username }}</b>{% else %}espera<br><b>{{ c.espera_min }} min</b>{% endif %}</span>
-    </div>
-    {% empty %}<div class="vazio">Nenhum carro pago esperando.</div>{% endfor %}
+    <div id="subir"><div class="vazio">Carregando...</div></div>
   </section>
   <section class="descer">
     <h2>⬇ PODE DESCER</h2>
-    {% for c in descer %}
-    <div class="linha">
-      <span class="placa">{{ c.placa|default:c.ticket }}<br><span class="mini">ticket {{ c.ticket }}</span></span>
-      <span class="sub">{{ c.andar.numero }}º</span>
-      <span class="mini">{{ c.quem_desceu.first_name|default:c.quem_desceu.username }}</span>
-    </div>
-    {% empty %}<div class="vazio">Nenhum carro novo.</div>{% endfor %}
+    <div id="descer"></div>
   </section>
 </div>
-<footer>
-{% for a in andares %}
-  <div class="and {{ a.cor }}"><span class="mini">{{ a.numero }}º subsolo</span><br><b>{% if a.cheio %}CHEIO{% else %}{{ a.livres }}{% endif %}</b> <span class="mini">{% if not a.cheio %}livres{% endif %}</span></div>
-{% endfor %}
-</footer>
+<div id="andares"></div>
+
+<div id="popup" hidden>
+  <div class="pop-card">
+    <div class="pop-tit">🚗 CARRO PAGO — PODE SUBIR</div>
+    <div class="pop-placa" id="pPlaca"></div>
+    <div class="pop-tick" id="pTicket"></div>
+    <div class="pop-and" id="pAndar"></div>
+    <div class="pop-fila" id="pFila"></div>
+    <button id="pOk" type="button">OK, VI</button>
+  </div>
+</div>
+
+<script>
+var URL_DADOS = "{% url 'telao_dados' %}";
+var CHAVE_ACK = "telao_avisados";
+var ack = new Set();
+try { ack = new Set(JSON.parse(localStorage.getItem(CHAVE_ACK) || "[]")); } catch (e) {}
+var fila = [];
+var atual = null;
+var audioCtx = null;
+var somLigado = false;
+var timerAlerta = null;
+var tituloOriginal = document.title;
+
+function salvarAck() {
+  try { localStorage.setItem(CHAVE_ACK, JSON.stringify(Array.from(ack).slice(-500))); } catch (e) {}
+}
+function el(tag, classe, texto) {
+  var e = document.createElement(tag);
+  if (classe) e.className = classe;
+  if (texto !== undefined) e.textContent = texto;
+  return e;
+}
+function nomeCarro(c) { return c.placa ? c.placa : "Ticket " + c.ticket; }
+
+function ativarSom() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume();
+    somLigado = true;
+    var b = document.getElementById("som");
+    b.textContent = "🔔 Som ligado";
+    b.className = "on";
+    bip();
+  } catch (e) {}
+}
+function bip() {
+  if (!audioCtx || !somLigado) return;
+  var t = audioCtx.currentTime;
+  [[880, 0], [1175, 0.22], [880, 0.44]].forEach(function (par) {
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.frequency.value = par[0];
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.0001, t + par[1]);
+    g.gain.exponentialRampToValueAtTime(0.5, t + par[1] + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + par[1] + 0.18);
+    o.start(t + par[1]);
+    o.stop(t + par[1] + 0.2);
+  });
+}
+function iniciarAlerta() {
+  pararAlerta();
+  var alterna = false;
+  timerAlerta = setInterval(function () {
+    alterna = !alterna;
+    document.title = alterna ? "🚗 CARRO PAGO!" : tituloOriginal;
+    if (alterna) bip();
+  }, 3000);
+}
+function pararAlerta() {
+  if (timerAlerta) { clearInterval(timerAlerta); timerAlerta = null; }
+  document.title = tituloOriginal;
+}
+
+function atualizarPopup() {
+  var pop = document.getElementById("popup");
+  if (!fila.length) {
+    pop.hidden = true;
+    atual = null;
+    pararAlerta();
+    return;
+  }
+  var c = fila[0];
+  document.getElementById("pPlaca").textContent = nomeCarro(c);
+  document.getElementById("pTicket").textContent = c.placa ? "Ticket " + c.ticket : "";
+  document.getElementById("pAndar").textContent = "📍 " + c.andar + "º SUBSOLO";
+  document.getElementById("pFila").textContent = fila.length > 1 ? "+ " + (fila.length - 1) + " carro(s) esperando na fila" : "";
+  pop.hidden = false;
+  if (atual !== c.id) {
+    atual = c.id;
+    bip();
+    iniciarAlerta();
+  }
+}
+function confirmar() {
+  if (atual === null) return;
+  ack.add(atual);
+  salvarAck();
+  fila = fila.filter(function (c) { return c.id !== atual; });
+  atual = null;
+  atualizarPopup();
+}
+
+function desenhar(d) {
+  var sub = document.getElementById("subir");
+  sub.textContent = "";
+  d.subir.forEach(function (c) {
+    var l = el("div", "linha" + (c.urgente ? " urgente" : (c.status !== "PAGO" ? " busca" : "")));
+    var p = el("span", "placa", nomeCarro(c));
+    if (c.placa) { p.appendChild(document.createElement("br")); p.appendChild(el("span", "mini", "ticket " + c.ticket)); }
+    l.appendChild(p);
+    l.appendChild(el("span", "sub", c.andar + "º"));
+    l.appendChild(el("span", "mini", c.status === "PAGO" ? "espera " + c.espera + " min" : "em busca"));
+    sub.appendChild(l);
+  });
+  if (!d.subir.length) sub.appendChild(el("div", "vazio", "Nenhum carro pago esperando."));
+
+  var des = document.getElementById("descer");
+  des.textContent = "";
+  d.descer.forEach(function (c) {
+    var l = el("div", "linha");
+    l.appendChild(el("span", "placa", nomeCarro(c)));
+    l.appendChild(el("span", "sub", c.andar + "º"));
+    des.appendChild(l);
+  });
+  if (!d.descer.length) des.appendChild(el("div", "vazio", "Nenhum carro novo."));
+
+  var an = document.getElementById("andares");
+  an.textContent = "";
+  d.andares.forEach(function (a) {
+    var box = el("div", "and " + a.cor);
+    box.appendChild(el("span", "mini", a.numero + "º subsolo"));
+    box.appendChild(document.createElement("br"));
+    box.appendChild(el("b", "", a.cheio ? "CHEIO" : String(a.livres)));
+    if (!a.cheio) box.appendChild(el("span", "mini", " livres"));
+    an.appendChild(box);
+  });
+  document.getElementById("hora").textContent = d.hora;
+}
+
+function aplicar(d) {
+  desenhar(d);
+  var pagos = d.subir.filter(function (c) { return c.status === "PAGO"; });
+  var ids = {};
+  pagos.forEach(function (c) { ids[c.id] = true; });
+  var mudou = false;
+  Array.from(ack).forEach(function (id) { if (!ids[id]) { ack.delete(id); mudou = true; } });
+  if (mudou) salvarAck();
+  fila = pagos.filter(function (c) { return !ack.has(c.id); });
+  atualizarPopup();
+}
+
+var buscando = false;
+function buscar() {
+  if (buscando) return;
+  buscando = true;
+  fetch(URL_DADOS, { credentials: "same-origin", cache: "no-store" })
+    .then(function (r) {
+      if (r.redirected || !r.ok) throw new Error("sessao");
+      return r.json();
+    })
+    .then(function (d) {
+      document.getElementById("aviso").style.display = "none";
+      aplicar(d);
+    })
+    .catch(function () {
+      var a = document.getElementById("aviso");
+      a.textContent = "Sem conexão com o sistema (ou o login expirou). Verifique a internet e recarregue a página (F5).";
+      a.style.display = "block";
+    })
+    .then(function () { buscando = false; });
+}
+
+document.getElementById("som").addEventListener("click", ativarSom);
+document.getElementById("pOk").addEventListener("click", function () { ativarSom(); confirmar(); });
+document.addEventListener("keydown", function (e) {
+  if (document.getElementById("popup").hidden) return;
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); confirmar(); }
+});
+buscar();
+setInterval(buscar, 3000);
+</script>
 </body>
 </html>

@@ -1,7 +1,6 @@
-# VERSÃO DE TESTE (grátis). Para a operação real, use os planos pagos.
 databases:
   - name: estacionamento-db
-    plan: free
+    plan: basic-1gb
     region: virginia
     databaseName: estacionamento
     user: estacionamento
@@ -10,7 +9,7 @@ services:
   - type: web
     name: estacionamento
     runtime: python
-    plan: free
+    plan: starter
     region: virginia
     buildCommand: "bash build.sh"
     startCommand: "python -m gunicorn config.wsgi:application"
