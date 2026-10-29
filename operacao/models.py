@@ -44,7 +44,7 @@ class Carro(models.Model):
         ("EM_RETIRADA", "Em retirada"),
         ("ENTREGUE", "Entregue"),
     ]
-    ticket = models.CharField(max_length=30)
+    ticket = models.CharField(max_length=30, blank=True, default="")
     placa = models.CharField(max_length=7, blank=True, default="")
     andar = models.ForeignKey(Andar, on_delete=models.PROTECT, related_name="carros")
     status = models.CharField(max_length=12, choices=STATUS, default="ESTACIONADO")
@@ -70,7 +70,7 @@ class Carro(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["ticket"],
-                condition=~Q(status="ENTREGUE"),
+                condition=~Q(status="ENTREGUE") & ~Q(ticket=""),
                 name="ticket_unico_entre_ativos",
             )
         ]

@@ -2,8 +2,8 @@
 {% block conteudo %}
 <h1>⬇ Receber carro</h1>
 <form method="post">{% csrf_token %}
-  <label>Número do ticket</label><input name="ticket" value="{{ request.POST.ticket }}" autocomplete="off" autofocus>
-  <label>Placa</label><input name="placa" value="{{ request.POST.placa }}" autocomplete="off" style="text-transform:uppercase" maxlength="8">
+  <label>Número do ticket <small>(opcional)</small></label><input name="ticket" value="{{ request.POST.ticket }}" autocomplete="off" autofocus>
+  <label>Placa <small>(informe a placa ou o ticket)</small></label><input name="placa" value="{{ request.POST.placa }}" autocomplete="off" style="text-transform:uppercase" maxlength="8">
   <label>Para qual subsolo o carro foi?</label>
   <select name="andar">
     {% for a in andares %}<option value="{{ a.pk }}" {% if a == sugerido %}selected{% endif %} {% if a.cheio %}disabled{% endif %}>

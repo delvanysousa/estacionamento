@@ -28,16 +28,16 @@ h2{margin:0 0 8px;font-size:26px;letter-spacing:1px}
 .and{border-radius:12px;padding:10px 14px;background:#16233f;border-left:12px solid #2a9d5c}
 .and.amarelo{border-color:#f4a300}.and.vermelho{border-color:#e63946;background:#3b1620}
 .and b{font-size:32px}
-#popup{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#popup{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 #popup[hidden]{display:none}
-.pop-card{width:min(900px,100%);background:#0f2b1d;border:8px solid #22c55e;border-radius:24px;padding:28px;text-align:center;animation:pulsa 1.4s infinite}
+.pop-card{width:min(600px,100%);background:#0f2b1d;border:6px solid #22c55e;border-radius:20px;padding:20px;text-align:center;animation:pulsa 1.4s infinite}
 @keyframes pulsa{50%{border-color:#86efac;background:#14532d}}
-.pop-tit{font-size:clamp(26px,4vw,44px);font-weight:800;color:#86efac}
-.pop-placa{font-size:clamp(60px,12vw,140px);font-weight:900;letter-spacing:6px;line-height:1.05;margin:10px 0}
-.pop-tick{font-size:clamp(22px,3vw,34px);color:#bbf7d0}
-.pop-and{font-size:clamp(48px,9vw,110px);font-weight:900;color:#fde047;margin:8px 0}
-.pop-fila{font-size:clamp(20px,2.6vw,30px);color:#fca5a5;min-height:1.3em;margin-bottom:10px}
-#pOk{width:100%;padding:22px;border:0;border-radius:16px;background:#22c55e;color:#052e16;font:900 clamp(28px,4vw,44px) system-ui;cursor:pointer}
+.pop-tit{font-size:clamp(18px,2.4vw,28px);font-weight:800;color:#86efac}
+.pop-placa{font-size:clamp(40px,7vw,84px);font-weight:900;letter-spacing:4px;line-height:1.05;margin:6px 0}
+.pop-tick{font-size:clamp(15px,2vw,22px);color:#bbf7d0}
+.pop-and{font-size:clamp(30px,5vw,60px);font-weight:900;color:#fde047;margin:4px 0}
+.pop-fila{font-size:clamp(14px,1.7vw,20px);color:#fca5a5;min-height:1.3em;margin-bottom:8px}
+#pOk{width:100%;padding:14px;border:0;border-radius:12px;background:#22c55e;color:#052e16;font:900 clamp(20px,2.4vw,28px) system-ui;cursor:pointer}
 @media (max-width:900px){.cols{grid-template-columns:1fr}.placa,.sub{font-size:34px}}
 </style>
 </head>
@@ -91,7 +91,7 @@ function el(tag, classe, texto) {
   if (texto !== undefined) e.textContent = texto;
   return e;
 }
-function nomeCarro(c) { return c.placa ? c.placa : "Ticket " + c.ticket; }
+function nomeCarro(c) { return c.placa ? c.placa : (c.ticket ? "Ticket " + c.ticket : "Sem identificação"); }
 
 function ativarSom() {
   try {
@@ -144,7 +144,7 @@ function atualizarPopup() {
   }
   var c = fila[0];
   document.getElementById("pPlaca").textContent = nomeCarro(c);
-  document.getElementById("pTicket").textContent = c.placa ? "Ticket " + c.ticket : "";
+  document.getElementById("pTicket").textContent = c.placa && c.ticket ? "Ticket " + c.ticket : "";
   document.getElementById("pAndar").textContent = "📍 " + c.andar + "º SUBSOLO";
   document.getElementById("pFila").textContent = fila.length > 1 ? "+ " + (fila.length - 1) + " carro(s) esperando na fila" : "";
   pop.hidden = false;
@@ -169,7 +169,7 @@ function desenhar(d) {
   d.subir.forEach(function (c) {
     var l = el("div", "linha" + (c.urgente ? " urgente" : (c.status !== "PAGO" ? " busca" : "")));
     var p = el("span", "placa", nomeCarro(c));
-    if (c.placa) { p.appendChild(document.createElement("br")); p.appendChild(el("span", "mini", "ticket " + c.ticket)); }
+    if (c.placa && c.ticket) { p.appendChild(document.createElement("br")); p.appendChild(el("span", "mini", "ticket " + c.ticket)); }
     l.appendChild(p);
     l.appendChild(el("span", "sub", c.andar + "º"));
     l.appendChild(el("span", "mini", c.status === "PAGO" ? "espera " + c.espera + " min" : "em busca"));

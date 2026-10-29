@@ -82,10 +82,12 @@ def receber(request):
         ticket = request.POST.get("ticket", "").strip().upper()
         placa = re.sub(r"[^A-Z0-9]", "", request.POST.get("placa", "").upper())
         andar = get_object_or_404(Andar, pk=request.POST.get("andar"))
-        if not ticket:
-            messages.error(request, "Informe o número do ticket.")
+        if not ticket and not placa:
+            messages.error(request, "Informe a placa ou o número do ticket.")
         elif placa and not PADRAO_PLACA.match(placa):
-            messages.error(request, "Placa inválida. Confira, ou deixe a placa em branco.")
+            messages.error(request, "Placa inválida. Confira e digite de novo.")
+        elif placa and Carro.objects.filter(placa=placa).exclude(status="ENTREGUE").exists():
+            messages.error(request, "Essa placa já está registrada no estacionamento.")
         elif andar.cheio():
             messages.error(request, f"O {andar} está CHEIO. Escolha outro andar.")
         else:
@@ -259,13 +261,13 @@ def para_exportar(d, ini, fim, quem):
             ("Tempo médio do pago até a entrega", d["atendimento_txt"]),
         ],
         "saidas": [
-            {"placa": c.placa or "-", "ticket": c.ticket, "subsolo": f"{c.andar.numero}º",
+            {"placa": c.placa or "-", "ticket": c.ticket or "-", "subsolo": f"{c.andar.numero}º",
              "entrada": _local(c.recebido_em), "pago": _local(c.pago_em), "saida": _local(c.entregue_em),
              "tempo": c.tempo_txt, "minutos": c.minutos}
             for c in d["saidos"]
         ],
         "no_momento": [
-            {"placa": c.placa or "-", "ticket": c.ticket, "subsolo": f"{c.andar.numero}º",
+            {"placa": c.placa or "-", "ticket": c.ticket or "-", "subsolo": f"{c.andar.numero}º",
              "situacao": c.get_status_display(), "entrada": _local(c.recebido_em), "pago": _local(c.pago_em),
              "tempo": c.tempo_txt, "minutos": c.minutos}
             for c in d["no_momento"]

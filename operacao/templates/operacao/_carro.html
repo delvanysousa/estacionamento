@@ -2,7 +2,7 @@
   <div class="placa">{% if c.placa %}{{ c.placa }}{% else %}Ticket {{ c.ticket }}{% endif %}</div>
   <div class="andarbig">📍 {{ c.andar }}</div>
   <div><span class="tag {{ c.status }}">{{ c.get_status_display }}</span>
-  {% if c.placa %}&nbsp;Ticket <b>{{ c.ticket }}</b>{% endif %}
+  {% if c.placa and c.ticket %}&nbsp;Ticket <b>{{ c.ticket }}</b>{% endif %}
   <small>&nbsp;· entrou às {{ c.recebido_em|date:"H:i" }}{% if c.pago_em %} · pago às {{ c.pago_em|date:"H:i" }}{% endif %}</small></div>
   {% if c.status == "ESTACIONADO" %}
     {% if perms.operacao.marcar_pago %}
